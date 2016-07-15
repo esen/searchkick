@@ -192,7 +192,11 @@ module Searchkick
       scope = scope.search_import if scope.respond_to?(:search_import)
       if scope.respond_to?(:find_in_batches)
         scope.find_in_batches batch_size: batch_size do |batch|
-          import batch.select(&:should_index?)
+          if scope.respond_to?(:custom_import)
+            scope.custom_import self, batch.select(&:should_index?)
+          else
+            import batch.select(&:should_index?)
+          end
         end
       else
         # https://github.com/karmi/tire/blob/master/lib/tire/model/import.rb
