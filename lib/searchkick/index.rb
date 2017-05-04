@@ -274,8 +274,10 @@ module Searchkick
         scope = scope.select("id").except(:includes, :preload) if async
 
         scope.find_in_batches batch_size: batch_size do |batch|
-          if scope.respond_to?(:custom_import)
-            scope.custom_import self, method_name, async, batch.select(&:should_index?)
+          if scope.respond_to?(:import_with_retry)
+            scope.import_with_retry(batch) do |batch_part|
+              import_or_update batch_part, method_name, async
+            end
           else
             import_or_update batch, method_name, async
           end
